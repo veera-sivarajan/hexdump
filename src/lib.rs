@@ -21,7 +21,7 @@ trait HexPrinter {
 impl HexPrinter for &[u8] {
     fn print(&self, count: usize) -> Result<()> {
         print!("{:08x}  ", count); // print the index of first byte in line
-        let mut ascii_buf = String::new();
+        let mut ascii_buf = String::with_capacity(16);
         for (count, byte) in self.iter().enumerate() {
             if count == 8 {
                 print!(" ");
@@ -33,7 +33,7 @@ impl HexPrinter for &[u8] {
             } else {
                 write!(ascii_buf, ".").map_err(|_err| HexdumpError::WriteBuffer)?;
             }
-            
+
             print!("{:02x} ", byte);
         }
         
