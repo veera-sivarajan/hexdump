@@ -1,8 +1,8 @@
+use std::fmt::Write;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::path::Path;
-use std::fmt::Write;
 
 #[derive(Debug)]
 pub enum HexdumpError {
@@ -26,7 +26,7 @@ impl HexPrinter for &[u8] {
             if count == 8 {
                 print!(" ");
             }
-            
+
             // store perusal format in a buffer
             if *byte >= 32 && *byte <= 126 {
                 write!(ascii_buf, "{}", *byte as char).map_err(|_err| HexdumpError::WriteBuffer)?;
@@ -36,17 +36,17 @@ impl HexPrinter for &[u8] {
 
             print!("{:02x} ", byte);
         }
-        
+
         // add padding when number of bytes in a line is less than 16
         let mut len = self.len();
-        while len < 16 { 
+        while len < 16 {
             if len == 8 {
                 print!(" ");
             }
             print!("   ");
             len += 1;
         }
-        
+
         // print perusal format
         if !ascii_buf.is_empty() {
             println!(" |{}|", ascii_buf);
