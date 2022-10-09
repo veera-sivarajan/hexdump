@@ -65,13 +65,13 @@ pub fn print(path: impl AsRef<Path>) -> Result<()> {
         let mut reader = BufReader::with_capacity(16, file);
         let mut count = 0;
         loop {
-            let slice = reader.fill_buf().map_err(|_err| HexdumpError::ReadBuffer)?;
-            let len = slice.len();
+            let byte_slice = reader.fill_buf().map_err(|_err| HexdumpError::ReadBuffer)?;
+            let len = byte_slice.len();
             if len == 0 {
                 println!("{:08x}", count);
                 break;
             } else {
-                slice.print(count)?;
+                byte_slice.print(count)?;
                 reader.consume(len);
                 count += len;
             }
