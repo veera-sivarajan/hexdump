@@ -1,0 +1,23 @@
+* hexdump
+A minimalistic library that produces the same output as ~hexdump -CV filename~. 
+* Usage
+#+BEGIN_SRC rust
+  use hexdump::HexdumpError;
+  
+  
+  match hexdump::print("filename") {
+      Err(HexdumpError::PathIsDir) => {
+          println!("Error: Path is directory. Expected a file.");
+      }
+      Err(HexdumpError::FileOpen) => {
+          println!("Error: Cannot open file.");
+      }
+      Err(HexdumpError::ReadBuffer) => {
+          println!("Error: Cannot read buffer.");
+      }
+      Err(HexdumpError::WriteBuffer) => {
+          println!("Error: Cannot write to temp buffer.");
+      }
+      Ok(()) => {}
+  }
+#+END_SRC
