@@ -1,8 +1,8 @@
 use std::fs::File;
+use std::io;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::path::Path;
-use std::io;
 
 #[derive(Debug)]
 pub enum HexdumpError {
@@ -25,9 +25,7 @@ trait HexPrinter {
 impl HexPrinter for &[u8] {
     fn print(&self, count: usize) {
         print!("{:08x}  ", count); // print the index of first byte in line
-        // let mut ascii_buf = String::with_capacity(16);
-        let mut ascii_buf = ['0'; 16];
-        let mut ascii_buf_index = 0;
+        let mut ascii_buf = String::with_capacity(16);
         for (count, byte) in self.iter().enumerate() {
             if count == 8 {
                 print!(" ");
@@ -35,13 +33,10 @@ impl HexPrinter for &[u8] {
 
             // store perusal format in a buffer
             if *byte >= 32 && *byte <= 126 {
-                // ascii_buf.push(*byte as char);
-                ascii_buf[ascii_buf_index] = *byte as char;
+                ascii_buf.push(*byte as char);
             } else {
-                // ascii_buf.push('.');
-                ascii_buf[ascii_buf_index] = '.'; 
+                ascii_buf.push('.');
             }
-            ascii_buf_index += 1;
 
             print!("{:02x} ", byte);
         }
@@ -57,15 +52,7 @@ impl HexPrinter for &[u8] {
         }
 
         // print perusal format
-        if !ascii_buf.is_empty() {
-            print!(" |");
-            for a in ascii_buf {
-                print!("{a}");
-            }
-            println!("|");
-        } else {
-            println!();
-        }
+        println!(" |{}|", ascii_buf);
     }
 }
 
