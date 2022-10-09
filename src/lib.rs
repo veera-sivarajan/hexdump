@@ -20,13 +20,14 @@ trait HexPrinter {
 
 impl HexPrinter for &[u8] {
     fn print(&self, count: usize) -> Result<()> {
-        print!("{:08x}  ", count);
+        print!("{:08x}  ", count); // print the index of first byte in line
         let mut ascii_buf = String::new();
         for (count, byte) in self.iter().enumerate() {
             if count == 8 {
                 print!(" ");
             }
             
+            // store perusal format in a buffer
             if *byte >= 32 && *byte <= 126 {
                 write!(ascii_buf, "{}", *byte as char).map_err(|_err| HexdumpError::WriteBuffer)?;
             } else {
@@ -36,6 +37,7 @@ impl HexPrinter for &[u8] {
             print!("{:02x} ", byte);
         }
         
+        // add padding when number of bytes in a line is less than 16
         let mut len = self.len();
         while len < 16 { 
             if len == 8 {
@@ -45,6 +47,7 @@ impl HexPrinter for &[u8] {
             len += 1;
         }
         
+        // print perusal format
         if !ascii_buf.is_empty() {
             println!(" |{}|", ascii_buf);
         } else {
