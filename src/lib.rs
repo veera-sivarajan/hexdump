@@ -61,21 +61,24 @@ pub fn print(path: impl AsRef<Path>) -> Result<()> {
     if path.as_ref().is_dir() {
         Err(HexdumpError::PathIsDir)
     } else {
-        let file = File::open(path).map_err(|_err| HexdumpError::FileOpen)?;
-        let mut reader = BufReader::with_capacity(16, file);
-        let mut count = 0;
-        loop {
-            let byte_slice = reader.fill_buf().map_err(|_err| HexdumpError::ReadBuffer)?;
-            let len = byte_slice.len();
-            if len == 0 {
-                println!("{:08x}", count);
-                break;
-            } else {
-                byte_slice.print(count)?;
-                reader.consume(len);
-                count += len;
-            }
-        }
-        Ok(())
+        File::open(path)
+            .map_err(|_err| HexdumpError::FileOpen)
+            .and_then(|file| {
+                let mut reader = BufReader::with_capacity(16, file);
+                let mut count = 0;
+                loop {
+                    let byte_slice = reader.fill_buf().map_err(|_err| HexdumpError::ReadBuffer)?;
+                    let len = byte_slice.len();
+                    if len == 0 {
+                        println!("{:08x}", count);
+                        break;
+                    } else {
+                        byte_slice.print(count)?;
+                        reader.consume(len);
+                        count += len;
+                    }
+                }
+                Ok(())
+            })
     }
 }
