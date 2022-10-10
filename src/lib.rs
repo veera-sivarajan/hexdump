@@ -19,7 +19,6 @@ where
         let mut ascii_buf = String::with_capacity(16);
         for (count, byte) in bytes.iter().enumerate() {
             if count == 8 {
-                // print!(" ");
                 write!(self.output, " ")?;
             }
 
@@ -34,13 +33,11 @@ where
         }
 
         // add padding when number of bytes in a line is less than 16
-        let mut len = bytes.len();
-        while len < 16 {
-            if len == 8 {
+        for i in bytes.len()..16 {
+            if i == 8 {
                 write!(self.output, " ")?;
             }
             write!(self.output, "   ")?;
-            len += 1;
         }
 
         // print perusal format
