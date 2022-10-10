@@ -1,34 +1,26 @@
-use std::fs::File;
 use std::io;
-use std::io::prelude::*;
-use std::io::BufReader;
-use std::path::Path;
 
-#[derive(Debug)]
-pub enum HexdumpError {
-    IOError(io::Error),
-    PathIsDir,
+#[derive(Copy, Clone)]
+pub struct Hexdump<I, O> {
+    input: I,
+    output: O,
 }
 
-impl From<io::Error> for HexdumpError {
-    fn from(err: io::Error) -> Self {
-        HexdumpError::IOError(err)
+impl<I, O> Hexdump<I, O>
+where
+    I: std::io::Read,
+    O: std::io::Write,
+{
+    pub fn new(input: I, output: O) -> Self {
+        Self { input, output }
     }
-}
 
-type Result<T> = std::result::Result<T, HexdumpError>;
-
-trait HexPrinter {
-    fn print(&self, count: usize);
-}
-
-impl HexPrinter for &[u8] {
-    fn print(&self, count: usize) {
-        print!("{:08x}  ", count); // print the index of first byte in line
+    fn format_bytes(&mut self, bytes: &[u8]) -> io::Result<()> {
         let mut ascii_buf = String::with_capacity(16);
-        for (count, byte) in self.iter().enumerate() {
+        for (count, byte) in bytes.iter().enumerate() {
             if count == 8 {
-                print!(" ");
+                // print!(" ");
+                write!(self.output, " ")?;
             }
 
             // store perusal format in a buffer
@@ -38,40 +30,36 @@ impl HexPrinter for &[u8] {
                 ascii_buf.push('.');
             }
 
-            print!("{:02x} ", byte);
+            write!(self.output, "{:02x} ", byte)?;
         }
 
         // add padding when number of bytes in a line is less than 16
-        let mut len = self.len();
+        let mut len = bytes.len();
         while len < 16 {
             if len == 8 {
-                print!(" ");
+                write!(self.output, " ")?;
             }
-            print!("   ");
+            write!(self.output, "   ")?;
             len += 1;
         }
 
         // print perusal format
-        println!(" |{}|", ascii_buf);
+        writeln!(self.output, " |{}|", ascii_buf)?;
+        Ok(())
     }
-}
 
-pub fn print(path: impl AsRef<Path>) -> Result<()> {
-    if path.as_ref().is_dir() {
-        Err(HexdumpError::PathIsDir)
-    } else {
-        let file = File::open(path)?;
-        let mut reader = BufReader::with_capacity(16, file);
+    pub fn print(&mut self) -> io::Result<()> {
         let mut count = 0;
         loop {
-            let byte_slice = reader.fill_buf()?;
-            let len = byte_slice.len();
+            let mut buffer = [0; 16];
+            let len = self.input.read(&mut buffer)?;
             if len == 0 {
-                println!("{:08x}", count);
+                writeln!(self.output, "{:08x}", count)?;
                 break;
             } else {
-                byte_slice.print(count);
-                reader.consume(len);
+                // print the index of first byte in line
+                write!(self.output, "{:08x}  ", count)?;
+                self.format_bytes(&buffer)?;
                 count += len;
             }
         }
