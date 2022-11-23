@@ -16,6 +16,7 @@ where
         Self { input, output, index: 0 }
     }
 
+    #[inline(always)]
     fn format_bytes(&mut self, bytes: &[u8]) -> io::Result<()> {
         let mut ascii_buf = String::with_capacity(16);
         for index in 0..16 {
