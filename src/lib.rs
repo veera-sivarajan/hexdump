@@ -16,19 +16,20 @@ where
         Self { input, output, index: 0 }
     }
 
-    fn format_bytes(&mut self, bytes: &[u8], len: usize) -> io::Result<()> {
+    fn format_bytes(&mut self, bytes: &[u8]) -> io::Result<()> {
         let mut ascii_buf = String::with_capacity(16);
-        for (count, byte) in bytes.iter().enumerate() {
-            if count == 8 {
+        for index in 0..16 {
+            if index == 8 {
                 write!(self.output, " ")?;
             }
 
-            if count >= len {
+            if index >= bytes.len() {
                 write!(self.output, "   ")?;
             } else {
                 // store perusal format in a buffer
-                if *byte >= 32 && *byte <= 126 {
-                    ascii_buf.push(*byte as char);
+                let byte = bytes[index];
+                if byte >= 32 && byte <= 126 {
+                    ascii_buf.push(byte as char);
                 } else {
                     ascii_buf.push('.');
                 }
@@ -51,12 +52,8 @@ where
             }
             for slice in buffer[..len].chunks(16) {
                 write!(self.output, "{:08x}  ", self.index)?;
-                if slice.len() == 0{
-                    return Ok(());
-                } else {
-                    self.format_bytes(&slice, slice.len())?;
-                    self.index += slice.len();
-                }
+                self.format_bytes(&slice)?;
+                self.index += slice.len();
             }
         }
         Ok(())
