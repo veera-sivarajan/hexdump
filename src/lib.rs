@@ -48,10 +48,12 @@ where
             if len == 0 {
                 writeln!(self.output, "{:08x}", self.index)?;
                 break;
-            } else {
-                // print the index of first byte in line
+            }
+            for slice in buffer[..len].chunks(16) {
                 write!(self.output, "{:08x}  ", self.index)?;
-                for slice in buffer.chunks(16) {
+                if slice.len() == 0{
+                    return Ok(());
+                } else {
                     self.format_bytes(&slice, slice.len())?;
                     self.index += slice.len();
                 }
