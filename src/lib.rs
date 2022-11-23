@@ -28,7 +28,7 @@ where
             } else {
                 // store perusal format in a buffer
                 let byte = bytes[index];
-                if byte >= 32 && byte <= 126 {
+                if (32..=126).contains(&byte) {
                     ascii_buf.push(byte as char);
                 } else {
                     ascii_buf.push('.');
@@ -52,7 +52,7 @@ where
             }
             for slice in buffer[..len].chunks(16) {
                 write!(self.output, "{:08x}  ", self.index)?;
-                self.format_bytes(&slice)?;
+                self.format_bytes(slice)?;
                 self.index += slice.len();
             }
         }
