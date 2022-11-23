@@ -1,17 +1,19 @@
 use std::io;
 
-pub struct Hexdump<I, O> {
+pub struct Hexdump<I, O>
+{
     input: I,
     output: O,
+    index: usize,
 }
 
 impl<I, O> Hexdump<I, O>
 where
-    I: std::io::Read,
-    O: std::io::Write,
+    I: io::Read,
+    O: io::Write,
 {
     pub fn new(input: I, output: O) -> Self {
-        Self { input, output }
+        Self { input, output, index: 0 }
     }
 
     fn format_bytes(&mut self, bytes: &[u8], len: usize) -> io::Result<()> {
@@ -20,7 +22,7 @@ where
             if count == 8 {
                 write!(self.output, " ")?;
             }
-            
+
             if count >= len {
                 write!(self.output, "   ")?;
             } else {
@@ -40,18 +42,19 @@ where
     }
 
     pub fn print(&mut self) -> io::Result<()> {
-        let mut count = 0;
         loop {
-            let mut buffer = [0; 16];
+            let mut buffer = [0; 1024];
             let len = self.input.read(&mut buffer)?;
             if len == 0 {
-                writeln!(self.output, "{:08x}", count)?;
+                writeln!(self.output, "{:08x}", self.index)?;
                 break;
             } else {
                 // print the index of first byte in line
-                write!(self.output, "{:08x}  ", count)?;
-                self.format_bytes(&buffer, len)?;
-                count += len;
+                write!(self.output, "{:08x}  ", self.index)?;
+                for slice in buffer.chunks(16) {
+                    self.format_bytes(&slice, slice.len())?;
+                    self.index += slice.len();
+                }
             }
         }
         Ok(())
