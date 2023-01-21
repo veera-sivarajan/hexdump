@@ -7,6 +7,9 @@ pub struct Hexdump<I, O>
     index: usize,
 }
 
+
+const BYTE_COUNT: usize = 16;
+
 impl<I, O> Hexdump<I, O>
 where
     I: io::Read,
@@ -18,8 +21,8 @@ where
 
     #[inline(always)]
     fn format_bytes(&mut self, bytes: &[u8]) -> io::Result<()> {
-        let mut ascii_buf = String::with_capacity(16);
-        for index in 0..16 {
+        let mut ascii_buf = String::with_capacity(BYTE_COUNT);
+        for index in 0..BYTE_COUNT {
             if index == 8 {
                 write!(self.output, " ")?;
             }
@@ -44,14 +47,15 @@ where
     }
 
     pub fn print(&mut self) -> io::Result<()> {
+        const BUFFER_SIZE: usize = 4096;
         loop {
-            let mut buffer = [0; 1024];
+            let mut buffer = [0; BUFFER_SIZE];
             let len = self.input.read(&mut buffer)?;
             if len == 0 {
                 writeln!(self.output, "{:08x}", self.index)?;
                 break;
             }
-            for slice in buffer[..len].chunks(16) {
+            for slice in buffer[..len].chunks(BYTE_COUNT) {
                 write!(self.output, "{:08x}  ", self.index)?;
                 self.format_bytes(slice)?;
                 self.index += slice.len();
