@@ -1,3 +1,8 @@
+//! This library writes a hexdump of the given input in
+//! canonical, verbose format to the specified output.
+//! In other words, it produces the same effect as
+//! invoking `hexdump -Cv`.
+
 use std::io;
 
 pub struct Hexdump<O>(O);
